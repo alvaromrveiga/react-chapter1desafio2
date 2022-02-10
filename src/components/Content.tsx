@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { AutoSizer, Grid, GridCellRenderer } from "react-virtualized";
 import { api } from "../services/api";
 import { MovieCard } from "./MovieCard";
 
@@ -43,6 +44,26 @@ export function Content(props: ContentProps) {
       });
   }, [props.selectedGenreId]);
 
+  const cellRenderer: GridCellRenderer = ({
+    columnIndex,
+    rowIndex,
+    key,
+    style,
+  }) => {
+    return (
+      <div key={key} style={style}>
+        {movies.length > columnIndex + rowIndex * 3 && (
+          <MovieCard
+            title={movies[columnIndex + rowIndex * 3].Title}
+            poster={movies[columnIndex + rowIndex * 3].Poster}
+            runtime={movies[columnIndex + rowIndex * 3].Runtime}
+            rating={movies[columnIndex + rowIndex * 3].Ratings[0].Value}
+          />
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="container">
       <header>
@@ -53,15 +74,20 @@ export function Content(props: ContentProps) {
 
       <main>
         <div className="movies-list">
-          {movies.map((movie) => (
-            <MovieCard
-              key={movie.imdbID}
-              title={movie.Title}
-              poster={movie.Poster}
-              runtime={movie.Runtime}
-              rating={movie.Ratings[0].Value}
-            />
-          ))}
+          <AutoSizer>
+            {({ height, width }) => (
+              <Grid
+                rowHeight={400}
+                height={800}
+                width={width}
+                columnWidth={width / 3.1}
+                columnCount={3}
+                rowCount={Math.ceil(movies.length / 3)}
+                overscanRowCount={1}
+                cellRenderer={cellRenderer}
+              />
+            )}
+          </AutoSizer>
         </div>
       </main>
     </div>
